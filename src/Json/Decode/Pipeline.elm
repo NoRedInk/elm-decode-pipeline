@@ -1,12 +1,8 @@
 module Json.Decode.Pipeline (required, optional, resolveResult, decode, hardcode, delegate) where
 
-{-| # Pipeline
+{-| ## Design Principles
 
-Functions for building decoders.
-
-## Design Principles
-
-* Introduce functions that work well with `|>`
+* Introduce functions that work well with the [`(|>)`](http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Basics#|>) operator
 * Don't introduce any custom infix operators
 * Don't introduce any functions that are intended to be called using backticks
 
@@ -36,17 +32,15 @@ import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, custom
         |> required "name" string
         |> required "email" string
 
-We could use this code as follows.
 
     result : Result String User
     result =
       Json.Decode.decodeString
         userDecoder
         """
-          {"id": 123, "email": "sam@example.com", "name": "Sam Sample"}
+          {"id": 123, "email": "sam@example.com", "name": "Sam"}
         """
-
-    -- result == Ok { id = 123, name = "Sam Sample", email = "sam@example.com" }
+    -- Ok { id = 123, name = "Sam", email = "sam@example.com" }
 -}
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
@@ -56,8 +50,6 @@ required key valDecoder decoder =
 {-| Decode a field that may or may not be present. If the field is present,
 use the specified decoder on it. If the field is not present, successfully
 decode to the given fallback value.
-
-Consider this example.
 
     import Json.Decode exposing (int, string, Decoder)
     import Json.Decode.Pipeline exposing (decode, required, optional)
@@ -77,7 +69,6 @@ Consider this example.
         |> optional "name" string "blah"
         |> required "email" string
 
-We could use this code as follows.
 
     result : Result String User
     result =
@@ -86,8 +77,7 @@ We could use this code as follows.
         """
           {"id": 123, "email": "sam@example.com" }
         """
-
-    -- result == Ok { id = 123, name = "blah", email = "sam@example.com" }
+    -- Ok { id = 123, name = "blah", email = "sam@example.com" }
 
 -}
 optional : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
@@ -109,7 +99,7 @@ pipeline. `harcode` does not look at the JSON at all.
     type alias User =
       { id : Int
       , email : String
-      , loginAttempts : Int
+      , followers : Int
       }
 
 
@@ -120,7 +110,6 @@ pipeline. `harcode` does not look at the JSON at all.
         |> required "email" string
         |> hardcode 0
 
-We could use this code as follows.
 
     result : Result String User
     result =
@@ -129,8 +118,7 @@ We could use this code as follows.
         """
           {"id": 123, "email": "sam@example.com"}
         """
-
-    -- result == Ok { id = 123, email = "sam@example.com", loginAttempts = 0 }
+    -- Ok { id = 123, email = "sam@example.com", followers = 0 }
 -}
 hardcode : a -> Decoder (a -> b) -> Decoder b
 hardcode val decoder =
@@ -143,7 +131,7 @@ decoder succeeds, its result gets fed into the pipeline at this point.)
 Consider this example.
 
     import Json.Decode exposing (int, string, at, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required, optional, delegate)
+    import Json.Decode.Pipeline exposing (decode, required, delegate)
 
 
     type alias User =
@@ -160,17 +148,19 @@ Consider this example.
         |> delegate (at [ "profile", "name" ])
         |> required "email" string
 
-We could use this code as follows.
 
     result : Result String User
     result =
       Json.Decode.decodeString
         userDecoder
         """
-          {"id": 123, "email": "sam@example.com", {"profile": {"name": "Sam"}}
+          {
+            "id": 123,
+            "email": "sam@example.com",
+            "profile": {"name": "Sam"}
+          }
         """
-
-    -- result == Ok { id = 123, name = "Sam", email = "sam@example.com" }
+    -- Ok { id = 123, name = "Sam", email = "sam@example.com" }
 -}
 delegate : Decoder a -> Decoder (a -> b) -> Decoder b
 delegate delegated decoder =
@@ -180,10 +170,9 @@ delegate delegated decoder =
 {-| Convert a `Decoder (Result x a)` into a `Decoder a`. Useful when you want
 to perform some custom processing just before completing the decoding operation.
 
-`resolveResult` is typically used as follows.
-
     import Json.Decode exposing (int, string, float, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required, optional, hardcode)
+    import Json.Decode.Pipeline exposing
+      (decode, required, resolveResult)
 
 
     type alias User =
@@ -195,21 +184,21 @@ to perform some custom processing just before completing the decoding operation.
     userDecoder : Decoder User
     userDecoder =
       let
-        -- asResult gets run *after* all the (|> required ...) steps are done.
+        -- asResult gets run *after* all the
+        -- (|> required ...) steps are done.
         asResult Int -> String -> Int -> Result String User
         asResult id email version =
           if version > 2 then
             Ok (User id email)
           else
-            Err "This JSON is from a deprecated endpoint. Please upgrade!"
+            Err "This JSON is from a deprecated source. Please upgrade!"
       in
         decode asResult
           |> required "id" int
           |> required "email" string
-          |> required "version" int -- version is part of asResult, but not User
-          |> resolveResult
+          |> required "version" int -- version is part of asResult,
+          |> resolveResult          -- but it is not a part of User
 
-We could use this code as follows.
 
     result : Result String User
     result =
@@ -218,8 +207,7 @@ We could use this code as follows.
         """
           {"id": 123, "email": "sam@example.com", "version": 1}
         """
-
-    -- result == Err "This JSON is from a deprecated endpoint. Please upgrade!"
+    -- Err "This JSON is from a deprecated source. Please upgrade!"
 -}
 resolveResult : Decoder (Result String a) -> Decoder a
 resolveResult resultDecoder =
