@@ -19,7 +19,7 @@ import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, custom
 {-| -}
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
-  andThen decoder (\wrappedFn -> map wrappedFn (key := valDecoder))
+  delegate (key := valDecoder) decoder
 
 
 {-| -}
@@ -29,7 +29,7 @@ optional key valDecoder fallback decoder =
     maybeDecoder =
       maybe (key := valDecoder) `andThen` ((Maybe.withDefault fallback) >> succeed)
   in
-    andThen decoder (\wrappedFn -> map wrappedFn maybeDecoder)
+    delegate maybeDecoder decoder
 
 
 {-| -}
