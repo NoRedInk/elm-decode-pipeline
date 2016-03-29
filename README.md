@@ -41,6 +41,7 @@ import Json.Decode.Pipeline exposing (decode, required, optional, hardcode)
 
 type alias User =
   { id : Int
+  , email : String
   , name : String
   , percentExcited : Float
   }
@@ -50,7 +51,8 @@ userDecoder : Decoder User
 userDecoder =
   decode User
     |> required "id" int
-    |> optional "name" string "(fallback if name not present)"
+    |> required "email" string
+    |> optional "name" string "(fallback if name not provided)"
     |> hardcode 1.0
 ```
 
@@ -67,7 +69,7 @@ You could use this decoder as follows:
 Json.Decode.decodeString
   userDecoder
   """
-    {"id": 123, "name": "Sam Sample"}
+    {"id": 123, "email": "sam@example.com", "name": "Sam Sample"}
   """
 ```
 
@@ -75,6 +77,7 @@ The result would be:
 
 ```elm
 { id = 123
+, email = "sam@example.com"
 , name = "Sam Sample"
 , percentExcited = 1.0
 }
@@ -83,20 +86,21 @@ The result would be:
 Alternatively, you could use it like so:
 
 ```elm
-    Json.Decode.decodeString
-      userDecoder
-      """
-        {"id": 123, percentExcited: "hardcoded; will be ignored"}
-      """
+Json.Decode.decodeString
+  userDecoder
+  """
+    {"id": 123, "email": "sam@example.com", "percentExcited": "(hardcoded)"}
+  """
 ```
 
 In this case, the result would be:
 
 ```elm
-    { id = 123
-    , name = "(fallback if name not present)"
-    , percentExcited = 1.0
-    }
+{ id = 123
+, email = "sam@example.com"
+, name = "(fallback if name not present)"
+, percentExcited = 1.0
+}
 ```
 
 ---
