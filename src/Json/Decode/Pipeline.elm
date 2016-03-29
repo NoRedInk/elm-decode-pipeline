@@ -27,9 +27,7 @@ optional : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optional key valDecoder fallback decoder =
   let
     maybeDecoder =
-      andThen
-        ((Maybe.withDefault fallback) >> succeed)
-        (maybe (key := valDecoder))
+      maybe (key := valDecoder) `andThen` ((Maybe.withDefault fallback) >> succeed)
   in
     andThen decoder (\wrappedFn -> map wrappedFn maybeDecoder)
 
