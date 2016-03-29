@@ -1,4 +1,4 @@
-module Json.Decode.Pipeline (required, optional, resolveResult, decode, hardcode, delegate) where
+module Json.Decode.Pipeline (required, optional, resolveResult, decode, hardcoded, custom) where
 
 {-| ## Design Principles
 
@@ -6,7 +6,7 @@ module Json.Decode.Pipeline (required, optional, resolveResult, decode, hardcode
 * Don't introduce any custom infix operators
 * Don't introduce any functions that are intended to be called using backticks
 
-@docs required, optional, hardcode, delegate, resolveResult, decode
+@docs required, optional, hardcoded, custom, resolveResult, decode
 -}
 
 import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, customDecoder)
@@ -44,7 +44,7 @@ import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, custom
 -}
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
-  delegate (key := valDecoder) decoder
+  custom (key := valDecoder) decoder
 
 
 {-| Decode a field that may or may not be present. If the field is present,
@@ -86,11 +86,11 @@ optional key valDecoder fallback decoder =
     maybeDecoder =
       maybe (key := valDecoder) `andThen` ((Maybe.withDefault fallback) >> succeed)
   in
-    delegate maybeDecoder decoder
+    custom maybeDecoder decoder
 
 
 {-| Rather than decoding anything, use a fixed value for the next step in the
-pipeline. `harcode` does not look at the JSON at all.
+pipeline. `harcoded` does not look at the JSON at all.
 
     import Json.Decode exposing (int, string, Decoder)
     import Json.Decode.Pipeline exposing (decode, required)
@@ -108,7 +108,7 @@ pipeline. `harcode` does not look at the JSON at all.
       decode User
         |> required "id" int
         |> required "email" string
-        |> hardcode 0
+        |> hardcoded 0
 
 
     result : Result String User
@@ -120,18 +120,17 @@ pipeline. `harcode` does not look at the JSON at all.
         """
     -- Ok { id = 123, email = "sam@example.com", followers = 0 }
 -}
-hardcode : a -> Decoder (a -> b) -> Decoder b
-hardcode val decoder =
+hardcoded : a -> Decoder (a -> b) -> Decoder b
+hardcoded val decoder =
   andThen decoder (\wrappedFn -> map wrappedFn (succeed val))
 
 
-{-| Delegate the next step in the pipeline to the given decoder. (If that
-decoder succeeds, its result gets fed into the pipeline at this point.)
+{-| Run the given decoder and feed its result into the pipeline at this point.
 
 Consider this example.
 
     import Json.Decode exposing (int, string, at, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required, delegate)
+    import Json.Decode.Pipeline exposing (decode, required, custom)
 
 
     type alias User =
@@ -145,7 +144,7 @@ Consider this example.
     userDecoder =
       decode User
         |> required "id" int
-        |> delegate (at [ "profile", "name" ])
+        |> custom (at [ "profile", "name" ])
         |> required "email" string
 
 
@@ -162,8 +161,8 @@ Consider this example.
         """
     -- Ok { id = 123, name = "Sam", email = "sam@example.com" }
 -}
-delegate : Decoder a -> Decoder (a -> b) -> Decoder b
-delegate delegated decoder =
+custom : Decoder a -> Decoder (a -> b) -> Decoder b
+custom delegated decoder =
   andThen decoder (\wrappedFn -> map wrappedFn delegated)
 
 

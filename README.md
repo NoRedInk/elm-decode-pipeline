@@ -36,7 +36,7 @@ Here is a decoder built with this library.
 
 ```elm
 import Json.Decode exposing (int, string, float, Decoder)
-import Json.Decode.Pipeline exposing (decode, required, optional, hardcode)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
 type alias User =
@@ -53,7 +53,7 @@ userDecoder =
     |> required "id" int
     |> required "email" string
     |> optional "name" string "(fallback if name not provided)"
-    |> hardcode 1.0
+    |> hardcoded 1.0
 ```
 
 In this example:
@@ -61,7 +61,7 @@ In this example:
 * `decode` is a synonym for [`succeed`](http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Json-Decode#succeed) (it just reads better here)
 * `required "id" int` is similar to `("id" := int)`
 * `optional` is like `required`, but if the field is not present, decoding does not fail; instead it succeeds with the provided fallback value.
-* `hardcode` does not look at the provided JSON, and instead always decodes to the same value.
+* `hardcoded` does not look at the provided JSON, and instead always decodes to the same value.
 
 You could use this decoder as follows:
 
