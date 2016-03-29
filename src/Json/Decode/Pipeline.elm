@@ -5,7 +5,7 @@ module Json.Decode.Pipeline (required, optional, fromResult, decode, hardcode, d
 @docs required, optional, hardcode, delegate, fromResult, decode
 -}
 
-import Json.Decode exposing (..)
+import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, customDecoder)
 
 
 {-| -}
