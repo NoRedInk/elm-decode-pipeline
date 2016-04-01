@@ -1,0 +1,17 @@
+{
+    "version": "1.0.0",
+    "summary": "A pipeline-friendly library for building decoders.",
+    "repository": "https://github.com/NoRedInk/elm-decode-pipeline.git",
+    "license": "BSD-3-Clause",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [
+        "Json.Decode.Pipeline"
+    ],
+    "dependencies": {
+        "elm-lang/core": "3.0.0 <= v < 4.0.0",
+        "evancz/elm-effects": "2.0.1 <= v < 3.0.0"
+    },
+    "elm-version": "0.16.0 <= v < 0.17.0"
+}
