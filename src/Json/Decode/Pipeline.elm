@@ -1,4 +1,4 @@
-module Json.Decode.Pipeline (required, optional, resolveResult, decode, hardcoded, custom) where
+module Json.Decode.Pipeline (required, requiredAt, optional, resolveResult, decode, hardcoded, custom) where
 
 {-| ## Design Principles
 
@@ -6,7 +6,7 @@ module Json.Decode.Pipeline (required, optional, resolveResult, decode, hardcode
 * Don't introduce any custom infix operators
 * Don't introduce any functions that are intended to be called using backticks
 
-@docs required, optional, hardcoded, custom, resolveResult, decode
+@docs required, requireAt, optional, hardcoded, custom, resolveResult, decode
 -}
 
 import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, customDecoder)
@@ -45,6 +45,13 @@ import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, custom
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
   custom (key := valDecoder) decoder
+
+
+{-| Decode a required nested field.
+-}
+requiredAt : List String -> Decoder a -> Decoder (a -> b) -> Decoder b
+requiredAt path valDecoder decoder =
+  custom (Json.Decode.at path valDecoder) decoder
 
 
 {-| Decode a field that may or may not be present. If the field is present,
