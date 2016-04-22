@@ -6,7 +6,7 @@ module Json.Decode.Pipeline (required, requiredAt, optional, resolveResult, deco
 * Don't introduce any custom infix operators
 * Don't introduce any functions that are intended to be called using backticks
 
-@docs required, requireAt, optional, hardcoded, custom, resolveResult, decode
+@docs required, requiredAt, optional, hardcoded, custom, resolveResult, decode
 -}
 
 import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, customDecoder)
