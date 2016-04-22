@@ -25,6 +25,12 @@ all =
         |> Pipeline.requiredAt [ "a" ] Json.string
         |> Pipeline.requiredAt [ "b", "c" ] Json.string
         |> decode """{"a":"foo","b":{"c":"bar"}}"""
-        |> assertEqual (Ok ("foo", "bar"))
+        |> assertEqual (Ok ( "foo", "bar" ))
         |> test "should decode requiredAt fields"
+    , Pipeline.decode (,)
+        |> Pipeline.optionalAt [ "a", "b" ] Json.string "--"
+        |> Pipeline.optionalAt [ "x", "y" ] Json.string "--"
+        |> decode """{"a":{},"x":{"y":"bar"}}"""
+        |> assertEqual (Ok ( "--", "bar" ))
+        |> test "should decode optionalAt fields"
     ]
