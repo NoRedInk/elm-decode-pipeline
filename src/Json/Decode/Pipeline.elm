@@ -1,4 +1,4 @@
-module Json.Decode.Pipeline (required, requiredAt, optional, resolveResult, decode, hardcoded, custom) where
+module Json.Decode.Pipeline (required, requiredAt, optional, optionalAt, resolveResult, decode, hardcoded, custom) where
 
 {-| ## Design Principles
 
@@ -6,7 +6,7 @@ module Json.Decode.Pipeline (required, requiredAt, optional, resolveResult, deco
 * Don't introduce any custom infix operators
 * Don't introduce any functions that are intended to be called using backticks
 
-@docs required, requireAt, optional, hardcoded, custom, resolveResult, decode
+@docs required, requiredAt, optional, optionalAt, hardcoded, custom, resolveResult, decode
 -}
 
 import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, customDecoder)
@@ -92,6 +92,17 @@ optional key valDecoder fallback decoder =
   let
     maybeDecoder =
       maybe (key := valDecoder) `andThen` ((Maybe.withDefault fallback) >> succeed)
+  in
+    custom maybeDecoder decoder
+
+
+{-| Decode an optional nested field.
+-}
+optionalAt : List String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
+optionalAt path valDecoder fallback decoder =
+  let
+    maybeDecoder =
+      maybe (Json.Decode.at path valDecoder) `andThen` ((Maybe.withDefault fallback) >> succeed)
   in
     custom maybeDecoder decoder
 
