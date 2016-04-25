@@ -89,22 +89,31 @@ decode to the given fallback value.
 -}
 optional : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optional key valDecoder fallback decoder =
-  let
-    maybeDecoder =
-      maybe (key := valDecoder) `andThen` ((Maybe.withDefault fallback) >> succeed)
-  in
-    custom maybeDecoder decoder
+  custom (optionalDecoder (key := Json.Decode.value) valDecoder fallback) decoder
 
 
 {-| Decode an optional nested field.
 -}
 optionalAt : List String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optionalAt path valDecoder fallback decoder =
+  custom (optionalDecoder (Json.Decode.at path Json.Decode.value) valDecoder fallback) decoder
+
+
+optionalDecoder : Decoder Json.Decode.Value -> Decoder a -> a -> Decoder a
+optionalDecoder pathDecoder valDecoder fallback =
   let
-    maybeDecoder =
-      maybe (Json.Decode.at path valDecoder) `andThen` ((Maybe.withDefault fallback) >> succeed)
+    handleResult input =
+      case Json.Decode.decodeValue pathDecoder input of
+        Ok rawValue ->
+          -- The field was present, so now let's try to decode that value.
+          -- (If it was present but fails to decode, this should and will fail!)
+          Json.Decode.decodeValue valDecoder rawValue
+
+        Err _ ->
+          -- The field was not present, so use the fallback.
+          Ok fallback
   in
-    custom maybeDecoder decoder
+    Json.Decode.customDecoder Json.Decode.value handleResult
 
 
 {-| Rather than decoding anything, use a fixed value for the next step in the
