@@ -33,4 +33,22 @@ all =
         |> decode """{"a":{},"x":{"y":"bar"}}"""
         |> assertEqual (Ok ( "--", "bar" ))
         |> test "should decode optionalAt fields"
+    , Pipeline.decode (,)
+        |> Pipeline.optional "a" Json.string "--"
+        |> Pipeline.optional "x" Json.string "--"
+        |> decode """{"x":"five"}"""
+        |> assertEqual (Ok ( "--", "five" ))
+        |> test "optional succeeds if the field is not present"
+    , Pipeline.decode (,)
+        |> Pipeline.optional "a" Json.string "--"
+        |> Pipeline.optional "x" Json.string "--"
+        |> decode """{"x":5}"""
+        |> assertEqual (Err "custom decoder failed: expecting a String but got 5")
+        |> test "optional fails if the field is present but doesn't decode"
+    , Pipeline.decode (,)
+        |> Pipeline.optionalAt [ "a", "b" ] Json.string "--"
+        |> Pipeline.optionalAt [ "x", "y" ] Json.string "--"
+        |> decode """{"a":{},"x":{"y":5}}"""
+        |> assertEqual (Err "custom decoder failed: expecting a String but got 5")
+        |> test "optionalAt fails if the field is present but doesn't decode"
     ]
