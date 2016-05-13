@@ -1,17 +1,8 @@
-module Main (..) where
+module Main exposing (..)
 
-import Signal exposing (Signal)
-import ElmTest exposing (consoleRunner)
-import Console exposing (IO, run)
-import Task
+import ElmTest exposing (..)
 import Tests
 
 
-console : IO ()
-console =
-  consoleRunner Tests.all
-
-
-port runner : Signal (Task.Task x ())
-port runner =
-  run console
+main =
+    runSuite Tests.all

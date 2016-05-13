@@ -1,4 +1,4 @@
-module Json.Decode.Pipeline (required, requiredAt, optional, optionalAt, resolveResult, decode, hardcoded, custom) where
+module Json.Decode.Pipeline exposing (required, requiredAt, optional, optionalAt, resolveResult, decode, hardcoded, custom)
 
 {-| ## Design Principles
 

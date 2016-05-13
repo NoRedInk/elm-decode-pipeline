@@ -9,9 +9,8 @@
     ],
     "exposed-modules": [],
     "dependencies": {
-        "deadfoxygrandpa/elm-test": "3.0.0 <= v < 4.0.0",
-        "elm-lang/core": "2.0.0 <= v < 4.0.0",
-        "laszlopandy/elm-console": "1.0.1 <= v < 2.0.0"
+        "elm-community/elm-test": "1.0.0 <= v < 2.0.0",
+        "elm-lang/core": "3.0.0 <= v < 4.0.0"
     },
-    "elm-version": "0.15.0 <= v < 0.17.0"
+    "elm-version": "0.17.0 <= v < 0.18.0"
 }

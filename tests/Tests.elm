@@ -1,4 +1,4 @@
-module Tests (..) where
+module Tests exposing (..)
 
 import ElmTest exposing (..)
 import String
@@ -43,12 +43,12 @@ all =
         |> Pipeline.optional "a" Json.string "--"
         |> Pipeline.optional "x" Json.string "--"
         |> decode """{"x":5}"""
-        |> assertEqual (Err "custom decoder failed: expecting a String but got 5")
+        |> assertEqual (Err "Expecting something custom but instead got: {\"x\":5}")
         |> test "optional fails if the field is present but doesn't decode"
     , Pipeline.decode (,)
         |> Pipeline.optionalAt [ "a", "b" ] Json.string "--"
         |> Pipeline.optionalAt [ "x", "y" ] Json.string "--"
         |> decode """{"a":{},"x":{"y":5}}"""
-        |> assertEqual (Err "custom decoder failed: expecting a String but got 5")
+        |> assertEqual (Err "Expecting something custom but instead got: {\"a\":{},\"x\":{\"y\":5}}")
         |> test "optionalAt fails if the field is present but doesn't decode"
     ]
