@@ -1,4 +1,4 @@
-module Json.Decode.Pipeline exposing (required, requiredAt, nullable, nullableAt, optional, optionalAt, fallback, fallbackAt, resolveResult, decode, hardcoded, custom)
+module Json.Decode.Pipeline exposing (required, requiredAt, optional, optionalAt, resolveResult, decode, hardcoded, custom)
 
 {-| ## Design Principles
 
@@ -13,18 +13,6 @@ import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, custom
 
 
 {-| Decode a required field.
-
-For similar operations, see [`nullable`](#nullable), [`optional`](#optional),
-and [`fallback`](#fallback):
-
-Function | Field missing? | Value is `null`? | Value decodes?
----|---|---|---
-`required`|`Err`|`Err`|`Ok str`
-`nullable`|`Err`|`Ok Nothing`|`Ok (Just str)`
-`optional`|`Ok Nothing`|`Ok Nothing`|`Ok (Just str)`
-`fallback`|`Ok fallbackStr`|`Ok fallbackStr`|`Ok str`
-
-For a nested version, see [`requiredAt`](#requiredAt).
 
     import Json.Decode exposing (int, string, Decoder)
     import Json.Decode.Pipeline exposing (decode, required)
@@ -59,31 +47,19 @@ required key valDecoder decoder =
     custom (key := valDecoder) decoder
 
 
-{-| Decode a nested field using [`fallback`](#fallback).
+{-| Decode a required nested field.
 -}
 requiredAt : List String -> Decoder a -> Decoder (a -> b) -> Decoder b
 requiredAt path valDecoder decoder =
     custom (Json.Decode.at path valDecoder) decoder
 
 
-{-| Decode a field that may be missing or `null`. If the field is present,
-use the specified decoder on it. If the field is not present, or if the field
-is null, successfully decode to the given fallback value.
-
-For similar operations, see [`nullable`](#nullable), [`optional`](#optional),
-and [`required`](#required):
-
-Function | Field missing? | Value is `null`? | Value decodes?
----|---|---|---
-`required`|`Err`|`Err`|`Ok str`
-`nullable`|`Err`|`Ok Nothing`|`Ok (Just str)`
-`optional`|`Ok Nothing`|`Ok Nothing`|`Ok (Just str)`
-`fallback`|`Ok fallbackStr`|`Ok fallbackStr`|`Ok str`
-
-For a nested version, see [`fallbackAt`](#fallbackAt).
+{-| Decode a field that may or may not be present. If the field is present,
+use the specified decoder on it. If the field is not present, successfully
+decode to the given fallback value.
 
     import Json.Decode exposing (int, string, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required, fallback)
+    import Json.Decode.Pipeline exposing (decode, required, optional)
 
 
     type alias User =
@@ -97,43 +73,34 @@ For a nested version, see [`fallbackAt`](#fallbackAt).
     userDecoder =
       decode User
         |> required "id" int
-        |> fallback "name" string "blah"
+        |> optional "name" string "blah"
         |> required "email" string
 
 
-    resultWhenNull : Result String User
-    resultWhenNull =
-      Json.Decode.decodeString
-        userDecoder
-        """
-          {"id": 123, "name": null, "email": "sam@example.com" }
-        """
-    -- Ok { id = 123, name = "blah", email = "sam@example.com" }
-
-
-    resultWhenMissing : Result String User
-    resultWhenMissing =
+    result : Result String User
+    result =
       Json.Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com" }
         """
     -- Ok { id = 123, name = "blah", email = "sam@example.com" }
+
 -}
-fallback : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
-fallback key valDecoder fallbackValue decoder =
-    custom (fallbackDecoder (key := Json.Decode.value) valDecoder fallbackValue) decoder
+optional : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
+optional key valDecoder fallback decoder =
+    custom (optionalDecoder (key := Json.Decode.value) valDecoder fallback) decoder
 
 
-{-| Decode a nested field using [`fallback`](#fallback).
+{-| Decode an optional nested field.
 -}
-fallbackAt : List String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
-fallbackAt path valDecoder fallbackValue decoder =
-    custom (fallbackDecoder (Json.Decode.at path Json.Decode.value) valDecoder fallbackValue) decoder
+optionalAt : List String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
+optionalAt path valDecoder fallback decoder =
+    custom (optionalDecoder (Json.Decode.at path Json.Decode.value) valDecoder fallback) decoder
 
 
-fallbackDecoder : Decoder Json.Decode.Value -> Decoder a -> a -> Decoder a
-fallbackDecoder pathDecoder valDecoder fallbackValue =
+optionalDecoder : Decoder Json.Decode.Value -> Decoder a -> a -> Decoder a
+optionalDecoder pathDecoder valDecoder fallback =
     let
         handleResult input =
             case Json.Decode.decodeValue pathDecoder input of
@@ -144,7 +111,7 @@ fallbackDecoder pathDecoder valDecoder fallbackValue =
 
                 Err _ ->
                     -- The field was not present, so use the fallback.
-                    Ok fallbackValue
+                    Ok fallback
     in
         Json.Decode.customDecoder Json.Decode.value handleResult
 
