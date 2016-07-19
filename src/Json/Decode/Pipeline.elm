@@ -102,12 +102,14 @@ optionalAt path valDecoder fallback decoder =
 optionalDecoder : Decoder Json.Decode.Value -> Decoder a -> a -> Decoder a
 optionalDecoder pathDecoder valDecoder fallback =
   let
+    nullOr decoder =
+      Json.Decode.oneOf [ Json.Decode.null fallback, decoder ]
     handleResult input =
       case Json.Decode.decodeValue pathDecoder input of
         Ok rawValue ->
           -- The field was present, so now let's try to decode that value.
           -- (If it was present but fails to decode, this should and will fail!)
-          Json.Decode.decodeValue valDecoder rawValue
+          Json.Decode.decodeValue (nullOr valDecoder) rawValue
 
         Err _ ->
           -- The field was not present, so use the fallback.
