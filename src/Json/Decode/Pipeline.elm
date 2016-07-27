@@ -9,7 +9,7 @@ module Json.Decode.Pipeline exposing (required, requiredAt, optional, optionalAt
 @docs required, requiredAt, optional, optionalAt, hardcoded, custom, resolveResult, decode
 -}
 
-import Json.Decode exposing (Decoder, map, succeed, andThen, (:=), maybe, customDecoder)
+import Json.Decode exposing (Decoder, map, object2, succeed, andThen, (:=), maybe, customDecoder)
 
 
 {-| Decode a required field.
@@ -148,8 +148,8 @@ pipeline. `harcoded` does not look at the JSON at all.
     -- Ok { id = 123, email = "sam@example.com", followers = 0 }
 -}
 hardcoded : a -> Decoder (a -> b) -> Decoder b
-hardcoded val decoder =
-  andThen decoder (\wrappedFn -> map wrappedFn (succeed val))
+hardcoded =
+  succeed >> custom
 
 
 {-| Run the given decoder and feed its result into the pipeline at this point.
@@ -189,8 +189,8 @@ Consider this example.
     -- Ok { id = 123, name = "Sam", email = "sam@example.com" }
 -}
 custom : Decoder a -> Decoder (a -> b) -> Decoder b
-custom delegated decoder =
-  andThen decoder (\wrappedFn -> map wrappedFn delegated)
+custom =
+  object2 (|>)
 
 
 {-| Convert a `Decoder (Result x a)` into a `Decoder a`. Useful when you want
