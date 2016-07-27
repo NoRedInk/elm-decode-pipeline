@@ -212,7 +212,7 @@ to perform some custom processing just before completing the decoding operation.
       let
         -- asResult gets run *after* all the
         -- (|> required ...) steps are done.
-        asResult Int -> String -> Int -> Result String User
+        asResult : Int -> String -> Int -> Result String User
         asResult id email version =
           if version > 2 then
             Ok (User id email)
