@@ -237,7 +237,7 @@ to perform some custom processing just before completing the decoding operation.
 -}
 resolveResult : Decoder (Result String a) -> Decoder a
 resolveResult resultDecoder =
-  andThen resultDecoder (\result -> customDecoder (succeed ()) (\_ -> result))
+  customDecoder resultDecoder identity
 
 
 {-| Begin a decoding pipeline. This is a synonym for [Json.Decode.succeed](http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Json-Decode#succeed),
