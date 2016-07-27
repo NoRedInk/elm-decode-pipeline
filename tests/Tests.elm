@@ -51,4 +51,16 @@ all =
         |> decode """{"a":{},"x":{"y":5}}"""
         |> assertEqual (Err "Expecting something custom but instead got: {\"a\":{},\"x\":{\"y\":5}}")
         |> test "optionalAt fails if the field is present but doesn't decode"
+    , Pipeline.decode Err
+        |> Pipeline.required "error" Json.string
+        |> Pipeline.resolveResult
+        |> decode """{"error":"invalid"}"""
+        |> assertEqual (Err "A `customDecode` failed with the message: invalid")
+        |> test "resolveResult bubbles up decoded Err results"
+    , Pipeline.decode Ok
+        |> Pipeline.required "ok" Json.string
+        |> Pipeline.resolveResult
+        |> decode """{"ok":"valid"}"""
+        |> assertEqual (Ok "valid")
+        |> test "resolveResult bubbles up decoded Ok results"
     ]
