@@ -9,7 +9,7 @@ module Json.Decode.Pipeline exposing (required, requiredAt, optional, optionalAt
 @docs required, requiredAt, optional, optionalAt, hardcoded, custom, resolveResult, decode
 -}
 
-import Json.Decode exposing (Decoder, map, object2, succeed, andThen, (:=), maybe, customDecoder)
+import Json.Decode exposing (Decoder, map, object2, succeed, (:=), maybe, customDecoder)
 
 
 {-| Decode a required field.
