@@ -171,7 +171,7 @@ Consider this example.
     userDecoder =
       decode User
         |> required "id" int
-        |> custom (at [ "profile", "name" ])
+        |> custom (at [ "profile", "name" ] string)
         |> required "email" string
 
 
