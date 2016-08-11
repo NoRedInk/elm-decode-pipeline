@@ -44,14 +44,14 @@ import Json.Decode exposing (Decoder, map, object2, succeed, (:=), maybe, custom
 -}
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
-  custom (key := valDecoder) decoder
+    custom (key := valDecoder) decoder
 
 
 {-| Decode a required nested field.
 -}
 requiredAt : List String -> Decoder a -> Decoder (a -> b) -> Decoder b
 requiredAt path valDecoder decoder =
-  custom (Json.Decode.at path valDecoder) decoder
+    custom (Json.Decode.at path valDecoder) decoder
 
 
 {-| Decode a field that may or may not be present. If the field is present,
@@ -89,33 +89,34 @@ decode to the given fallback value.
 -}
 optional : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optional key valDecoder fallback decoder =
-  custom (optionalDecoder (key := Json.Decode.value) valDecoder fallback) decoder
+    custom (optionalDecoder (key := Json.Decode.value) valDecoder fallback) decoder
 
 
 {-| Decode an optional nested field.
 -}
 optionalAt : List String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optionalAt path valDecoder fallback decoder =
-  custom (optionalDecoder (Json.Decode.at path Json.Decode.value) valDecoder fallback) decoder
+    custom (optionalDecoder (Json.Decode.at path Json.Decode.value) valDecoder fallback) decoder
 
 
 optionalDecoder : Decoder Json.Decode.Value -> Decoder a -> a -> Decoder a
 optionalDecoder pathDecoder valDecoder fallback =
-  let
-    nullOr decoder =
-      Json.Decode.oneOf [ Json.Decode.null fallback, decoder ]
-    handleResult input =
-      case Json.Decode.decodeValue pathDecoder input of
-        Ok rawValue ->
-          -- The field was present, so now let's try to decode that value.
-          -- (If it was present but fails to decode, this should and will fail!)
-          Json.Decode.decodeValue (nullOr valDecoder) rawValue
+    let
+        nullOr decoder =
+            Json.Decode.oneOf [ Json.Decode.null fallback, decoder ]
 
-        Err _ ->
-          -- The field was not present, so use the fallback.
-          Ok fallback
-  in
-    Json.Decode.customDecoder Json.Decode.value handleResult
+        handleResult input =
+            case Json.Decode.decodeValue pathDecoder input of
+                Ok rawValue ->
+                    -- The field was present, so now let's try to decode that value.
+                    -- (If it was present but fails to decode, this should and will fail!)
+                    Json.Decode.decodeValue (nullOr valDecoder) rawValue
+
+                Err _ ->
+                    -- The field was not present, so use the fallback.
+                    Ok fallback
+    in
+        Json.Decode.customDecoder Json.Decode.value handleResult
 
 
 {-| Rather than decoding anything, use a fixed value for the next step in the
@@ -151,7 +152,7 @@ pipeline. `harcoded` does not look at the JSON at all.
 -}
 hardcoded : a -> Decoder (a -> b) -> Decoder b
 hardcoded =
-  succeed >> custom
+    succeed >> custom
 
 
 {-| Run the given decoder and feed its result into the pipeline at this point.
@@ -192,7 +193,7 @@ Consider this example.
 -}
 custom : Decoder a -> Decoder (a -> b) -> Decoder b
 custom =
-  object2 (|>)
+    object2 (|>)
 
 
 {-| Convert a `Decoder (Result x a)` into a `Decoder a`. Useful when you want
@@ -239,7 +240,7 @@ to perform some custom processing just before completing the decoding operation.
 -}
 resolveResult : Decoder (Result String a) -> Decoder a
 resolveResult resultDecoder =
-  customDecoder resultDecoder identity
+    customDecoder resultDecoder identity
 
 
 {-| Begin a decoding pipeline. This is a synonym for [Json.Decode.succeed](http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Json-Decode#succeed),
@@ -265,4 +266,4 @@ intended to make things read more clearly.
 -}
 decode : a -> Decoder a
 decode =
-  succeed
+    succeed
