@@ -42,6 +42,12 @@ all =
     , Pipeline.decode (,)
         |> Pipeline.optional "a" Json.string "--"
         |> Pipeline.optional "x" Json.string "--"
+        |> decode """{"a":null,"x":"five"}"""
+        |> assertEqual (Ok ( "--", "five" ))
+        |> test "optional succeeds if the field is present but null"
+    , Pipeline.decode (,)
+        |> Pipeline.optional "a" Json.string "--"
+        |> Pipeline.optional "x" Json.string "--"
         |> decode """{"x":5}"""
         |> assertEqual (Err "A `customDecode` failed with the message: Expecting a String but instead got: 5")
         |> test "optional fails if the field is present but doesn't decode"
