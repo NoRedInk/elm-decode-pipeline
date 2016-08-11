@@ -11,6 +11,19 @@ decode : String -> Json.Decoder a -> Result String a
 decode =
     flip Json.decodeString
 
+isError : Result err ok -> Bool
+isError result =
+    case result of
+        Err _ ->
+            True
+
+        Ok _ ->
+            False
+
+expectErr : Result err ok -> Expect.Expectation
+expectErr result =
+    isError result
+        |> Expect.true ("Expected an Err but got " ++ toString result)
 
 all : Test
 all =
@@ -55,21 +68,21 @@ all =
             |> Pipeline.optional "a" Json.string "--"
             |> Pipeline.optional "x" Json.string "--"
             |> decode """{"x":5}"""
-            |> Expect.equal (Err "A `customDecode` failed with the message: Expecting a String but instead got: 5")
+            |> expectErr
             |> always
             |> test "optional fails if the field is present but doesn't decode"
         , Pipeline.decode (,)
             |> Pipeline.optionalAt [ "a", "b" ] Json.string "--"
             |> Pipeline.optionalAt [ "x", "y" ] Json.string "--"
             |> decode """{"a":{},"x":{"y":5}}"""
-            |> Expect.equal (Err "A `customDecode` failed with the message: Expecting a String but instead got: 5")
+            |> expectErr
             |> always
             |> test "optionalAt fails if the field is present but doesn't decode"
         , Pipeline.decode Err
             |> Pipeline.required "error" Json.string
             |> Pipeline.resolveResult
             |> decode """{"error":"invalid"}"""
-            |> Expect.equal (Err "A `customDecode` failed with the message: invalid")
+            |> expectErr
             |> always
             |> test "resolveResult bubbles up decoded Err results"
         , Pipeline.decode Ok
