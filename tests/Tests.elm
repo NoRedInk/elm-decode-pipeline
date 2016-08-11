@@ -63,7 +63,14 @@ all =
             |> decode """{"a":null,"x":"five"}"""
             |> Expect.equal (Ok ( "--", "five" ))
             |> always
-            |> test "optional succeeds if the field is present but null"
+            |> test "optional succeeds with fallback if the field is present but null"
+        , Pipeline.decode (,)
+            |> Pipeline.optional "a" (Json.null "null") "--"
+            |> Pipeline.optional "x" Json.string "--"
+            |> decode """{"a":null,"x":"five"}"""
+            |> Expect.equal (Ok ( "null", "five" ))
+            |> always
+            |> test "optional succeeds with result of the given decoder if the field is null and the decoder decodes nulls"
         , Pipeline.decode (,)
             |> Pipeline.optional "a" Json.string "--"
             |> Pipeline.optional "x" Json.string "--"
