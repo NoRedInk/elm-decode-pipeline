@@ -9,6 +9,7 @@ Use the `(|>)` operator to build JSON decoders.
 @docs required, requiredAt, optional, optionalAt, hardcoded, custom, nullable
 
 ## Beginning and ending pipelines
+
 @docs decode, resolveResult
 
 -}
