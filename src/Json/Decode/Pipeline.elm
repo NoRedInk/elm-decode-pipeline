@@ -1,4 +1,4 @@
-module Json.Decode.Pipeline exposing (required, requiredAt, optional, optionalAt, resolveResult, decode, hardcoded, custom, nullable)
+module Json.Decode.Pipeline exposing (deleteMeToForceMajorVersionBump, required, requiredAt, optional, optionalAt, resolveResult, decode, hardcoded, custom, nullable)
 
 {-| # Json.Decode.Pipeline
 
@@ -12,9 +12,20 @@ Use the `(|>)` operator to build JSON decoders.
 
 @docs decode, resolveResult
 
+## Hack to force major version bump
+
+@docs deleteMeToForceMajorVersionBump
+
 -}
 
 import Json.Decode exposing (Decoder, map, object2, succeed, (:=), maybe, customDecoder)
+
+
+{-| Hack to force major version bump. See https://github.com/NoRedInk/elm-decode-pipeline/pull/9
+-}
+deleteMeToForceMajorVersionBump : ()
+deleteMeToForceMajorVersionBump =
+    ()
 
 
 {-| Decode a required field.
