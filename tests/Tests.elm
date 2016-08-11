@@ -2,7 +2,6 @@ module Tests exposing (..)
 
 import Test exposing (..)
 import Expect
-import String
 import Json.Decode.Pipeline as Pipeline
 import Json.Decode as Json
 
