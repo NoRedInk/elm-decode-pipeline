@@ -54,11 +54,13 @@ requiredAt path valDecoder decoder =
     custom (Json.Decode.at path valDecoder) decoder
 
 
-{-| Decode a field that may or may not be present. If the field is present,
-use the specified decoder on it. If the field is not present, successfully
-decode to the given fallback value.
+{-| Decode a field that may be missing or have a null value. If the field is
+missing, then it decodes as the `fallback` value. If the field is present,
+then `valDecoder` is used to decode its value. If `valDecoder` fails on a
+`null` value, then the `fallback` is used as if the field were missing
+entirely.
 
-    import Json.Decode exposing (int, string, Decoder)
+    import Json.Decode exposing (int, string, null, oneOf, Decoder)
     import Json.Decode.Pipeline exposing (decode, required, optional)
 
 
@@ -86,6 +88,16 @@ decode to the given fallback value.
         """
     -- Ok { id = 123, name = "blah", email = "sam@example.com" }
 
+Because `valDecoder` is given an opportunity to decode `null` values before
+resorting to the `fallback`, you can distinguish between missing and `null`
+values if you need to:
+
+    userDecoder2 =
+        decode User
+            |> required "id" int
+            |> optional "name" (oneOf [ string, null "NULL" ]) "MISSING"
+            |> required "email" string
+
 -}
 optional : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optional key valDecoder fallback decoder =
@@ -103,7 +115,7 @@ optionalDecoder : Decoder Json.Decode.Value -> Decoder a -> a -> Decoder a
 optionalDecoder pathDecoder valDecoder fallback =
     let
         nullOr decoder =
-            Json.Decode.oneOf [ Json.Decode.null fallback, decoder ]
+            Json.Decode.oneOf [ decoder, Json.Decode.null fallback ]
 
         handleResult input =
             case Json.Decode.decodeValue pathDecoder input of
