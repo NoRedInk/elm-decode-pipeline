@@ -6,7 +6,7 @@ Use the `(|>)` operator to build JSON decoders.
 
 ## Decoding fields
 
-@docs required, requiredAt, optional, optionalAt, hardcoded, custom, nullable
+@docs required, requiredAt, optional, optionalAt, hardcoded, custom
 
 ## Beginning and ending pipelines
 
@@ -284,44 +284,3 @@ intended to make things read more clearly.
 decode : a -> Decoder a
 decode =
     succeed
-
-
-{-| Extract a value that might be `null`.
-
-If the value is `null`, decodes to `Nothing`.
-If the value is not `null`, runs the given decoder on it and...
-
-* ...If that decoder succeeds, wraps its success value in a `Just`.
-* ...If it fails, the entire decoding operation fails.
-
-
-    import Json.Decode exposing (int, string, float, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required, optional)
-
-
-    type alias User =
-      { id : Int
-      , email : String
-      , name : Maybe String
-      }
-
-
-    userDecoder : Decoder User
-    userDecoder =
-      decode User
-        |> required "id" int
-        |> required "email" string
-        |> required "name" (nullable string)
-
-In the above example,
-
-* If `name` is `null`, it will successfully decode to `Nothing`
-* If `name` is `"Lee"` it will successfully decode to `Just "Lee"`
-* If `name` is not present, the whole decoder will fail.
--}
-nullable : Decoder a -> Decoder (Maybe a)
-nullable decoder =
-    Json.Decode.oneOf
-        [ Json.Decode.null Nothing
-        , Json.Decode.map Just decoder
-        ]
