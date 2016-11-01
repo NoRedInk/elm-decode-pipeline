@@ -1,4 +1,4 @@
-module Json.Decode.Pipeline exposing (required, requiredAt, optional, optionalAt, resolveResult, decode, hardcoded, custom, nullable)
+module Json.Decode.Pipeline exposing (required, requiredAt, optional, optionalAt, resolve, decode, hardcoded, custom)
 
 {-| # Json.Decode.Pipeline
 
@@ -10,17 +10,17 @@ Use the `(|>)` operator to build JSON decoders.
 
 ## Beginning and ending pipelines
 
-@docs decode, resolveResult
+@docs decode, resolve
 
 -}
 
-import Json.Decode exposing (Decoder, map, object2, succeed, (:=), maybe, customDecoder)
+import Json.Decode as Decode exposing (Decoder)
 
 
 {-| Decode a required field.
 
     import Json.Decode exposing (int, string, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required)
+    import Decode.Pipeline exposing (decode, required)
 
 
     type alias User =
@@ -40,7 +40,7 @@ import Json.Decode exposing (Decoder, map, object2, succeed, (:=), maybe, custom
 
     result : Result String User
     result =
-      Json.Decode.decodeString
+      Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com", "name": "Sam"}
@@ -49,14 +49,14 @@ import Json.Decode exposing (Decoder, map, object2, succeed, (:=), maybe, custom
 -}
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
-    custom (key := valDecoder) decoder
+    custom (Decode.field key valDecoder) decoder
 
 
 {-| Decode a required nested field.
 -}
 requiredAt : List String -> Decoder a -> Decoder (a -> b) -> Decoder b
 requiredAt path valDecoder decoder =
-    custom (Json.Decode.at path valDecoder) decoder
+    custom (Decode.at path valDecoder) decoder
 
 
 {-| Decode a field that may be missing or have a null value. If the field is
@@ -66,7 +66,7 @@ then `valDecoder` is used to decode its value. If `valDecoder` fails on a
 entirely.
 
     import Json.Decode exposing (int, string, null, oneOf, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required, optional)
+    import Decode.Pipeline exposing (decode, required, optional)
 
 
     type alias User =
@@ -86,7 +86,7 @@ entirely.
 
     result : Result String User
     result =
-      Json.Decode.decodeString
+      Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com" }
@@ -106,41 +106,47 @@ values if you need to:
 -}
 optional : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optional key valDecoder fallback decoder =
-    custom (optionalDecoder (key := Json.Decode.value) valDecoder fallback) decoder
+    custom (optionalDecoder (Decode.field key Decode.value) valDecoder fallback) decoder
 
 
 {-| Decode an optional nested field.
 -}
 optionalAt : List String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
 optionalAt path valDecoder fallback decoder =
-    custom (optionalDecoder (Json.Decode.at path Json.Decode.value) valDecoder fallback) decoder
+    custom (optionalDecoder (Decode.at path Decode.value) valDecoder fallback) decoder
 
 
-optionalDecoder : Decoder Json.Decode.Value -> Decoder a -> a -> Decoder a
+optionalDecoder : Decoder Decode.Value -> Decoder a -> a -> Decoder a
 optionalDecoder pathDecoder valDecoder fallback =
     let
         nullOr decoder =
-            Json.Decode.oneOf [ decoder, Json.Decode.null fallback ]
+            Decode.oneOf [ decoder, Decode.null fallback ]
 
         handleResult input =
-            case Json.Decode.decodeValue pathDecoder input of
+            case Decode.decodeValue pathDecoder input of
                 Ok rawValue ->
                     -- The field was present, so now let's try to decode that value.
                     -- (If it was present but fails to decode, this should and will fail!)
-                    Json.Decode.decodeValue (nullOr valDecoder) rawValue
+                    case Decode.decodeValue (nullOr valDecoder) rawValue of
+                        Ok finalResult ->
+                            Decode.succeed finalResult
+
+                        Err finalErr ->
+                            Decode.fail finalErr
 
                 Err _ ->
                     -- The field was not present, so use the fallback.
-                    Ok fallback
+                    Decode.succeed fallback
     in
-        Json.Decode.customDecoder Json.Decode.value handleResult
+        Decode.value
+            |> Decode.andThen handleResult
 
 
 {-| Rather than decoding anything, use a fixed value for the next step in the
 pipeline. `harcoded` does not look at the JSON at all.
 
     import Json.Decode exposing (int, string, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required)
+    import Decode.Pipeline exposing (decode, required)
 
 
     type alias User =
@@ -160,7 +166,7 @@ pipeline. `harcoded` does not look at the JSON at all.
 
     result : Result String User
     result =
-      Json.Decode.decodeString
+      Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com"}
@@ -169,7 +175,7 @@ pipeline. `harcoded` does not look at the JSON at all.
 -}
 hardcoded : a -> Decoder (a -> b) -> Decoder b
 hardcoded =
-    succeed >> custom
+    Decode.succeed >> custom
 
 
 {-| Run the given decoder and feed its result into the pipeline at this point.
@@ -177,7 +183,7 @@ hardcoded =
 Consider this example.
 
     import Json.Decode exposing (int, string, at, Decoder)
-    import Json.Decode.Pipeline exposing (decode, required, custom)
+    import Decode.Pipeline exposing (decode, required, custom)
 
 
     type alias User =
@@ -197,7 +203,7 @@ Consider this example.
 
     result : Result String User
     result =
-      Json.Decode.decodeString
+      Decode.decodeString
         userDecoder
         """
           {
@@ -210,15 +216,15 @@ Consider this example.
 -}
 custom : Decoder a -> Decoder (a -> b) -> Decoder b
 custom =
-    object2 (|>)
+    Decode.map2 (|>)
 
 
 {-| Convert a `Decoder (Result x a)` into a `Decoder a`. Useful when you want
 to perform some custom processing just before completing the decoding operation.
 
     import Json.Decode exposing (int, string, float, Decoder)
-    import Json.Decode.Pipeline exposing
-      (decode, required, resolveResult)
+    import Decode.Pipeline exposing
+      (decode, required, resolve)
 
 
     type alias User =
@@ -230,37 +236,37 @@ to perform some custom processing just before completing the decoding operation.
     userDecoder : Decoder User
     userDecoder =
       let
-        -- asResult gets run *after* all the
+        -- toDecoder gets run *after* all the
         -- (|> required ...) steps are done.
-        asResult : Int -> String -> Int -> Result String User
-        asResult id email version =
+        toDecoder : Int -> String -> Int -> Decoder User
+        toDecoder id email version =
           if version > 2 then
-            Ok (User id email)
+            succeed (User id email)
           else
-            Err "This JSON is from a deprecated source. Please upgrade!"
+            fail "This JSON is from a deprecated source. Please upgrade!"
       in
-        decode asResult
+        decode toDecoder
           |> required "id" int
           |> required "email" string
-          |> required "version" int -- version is part of asResult,
-          |> resolveResult          -- but it is not a part of User
+          |> required "version" int -- version is part of toDecoder,
+          |> resolve                -- but it is not a part of User
 
 
     result : Result String User
     result =
-      Json.Decode.decodeString
+      Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com", "version": 1}
         """
     -- Err "This JSON is from a deprecated source. Please upgrade!"
 -}
-resolveResult : Decoder (Result String a) -> Decoder a
-resolveResult resultDecoder =
-    customDecoder resultDecoder identity
+resolve : Decoder (Decoder a) -> Decoder a
+resolve =
+    Decode.andThen identity
 
 
-{-| Begin a decoding pipeline. This is a synonym for [Json.Decode.succeed](http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Json-Decode#succeed),
+{-| Begin a decoding pipeline. This is a synonym for [Json.Decode.succeed](http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode#succeed),
 intended to make things read more clearly.
 
     import Json.Decode exposing (int, string, float, Decoder)
@@ -283,4 +289,4 @@ intended to make things read more clearly.
 -}
 decode : a -> Decoder a
 decode =
-    succeed
+    Decode.succeed
