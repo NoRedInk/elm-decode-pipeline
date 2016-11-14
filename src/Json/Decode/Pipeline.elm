@@ -20,7 +20,7 @@ import Json.Decode as Decode exposing (Decoder)
 {-| Decode a required field.
 
     import Json.Decode exposing (int, string, Decoder)
-    import Decode.Pipeline exposing (decode, required)
+    import Json.Decode.Pipeline exposing (decode, required)
 
 
     type alias User =
@@ -40,7 +40,7 @@ import Json.Decode as Decode exposing (Decoder)
 
     result : Result String User
     result =
-      Decode.decodeString
+      Json.Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com", "name": "Sam"}
@@ -66,7 +66,7 @@ then `valDecoder` is used to decode its value. If `valDecoder` fails on a
 entirely.
 
     import Json.Decode exposing (int, string, null, oneOf, Decoder)
-    import Decode.Pipeline exposing (decode, required, optional)
+    import Json.Decode.Pipeline exposing (decode, required, optional)
 
 
     type alias User =
@@ -86,7 +86,7 @@ entirely.
 
     result : Result String User
     result =
-      Decode.decodeString
+      Json.Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com" }
@@ -146,7 +146,7 @@ optionalDecoder pathDecoder valDecoder fallback =
 pipeline. `harcoded` does not look at the JSON at all.
 
     import Json.Decode exposing (int, string, Decoder)
-    import Decode.Pipeline exposing (decode, required)
+    import Json.Decode.Pipeline exposing (decode, required)
 
 
     type alias User =
@@ -166,7 +166,7 @@ pipeline. `harcoded` does not look at the JSON at all.
 
     result : Result String User
     result =
-      Decode.decodeString
+      Json.Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com"}
@@ -183,7 +183,7 @@ hardcoded =
 Consider this example.
 
     import Json.Decode exposing (int, string, at, Decoder)
-    import Decode.Pipeline exposing (decode, required, custom)
+    import Json.Decode.Pipeline exposing (decode, required, custom)
 
 
     type alias User =
@@ -203,7 +203,7 @@ Consider this example.
 
     result : Result String User
     result =
-      Decode.decodeString
+      Json.Decode.decodeString
         userDecoder
         """
           {
@@ -223,7 +223,7 @@ custom =
 to perform some custom processing just before completing the decoding operation.
 
     import Json.Decode exposing (int, string, float, Decoder)
-    import Decode.Pipeline exposing
+    import Json.Decode.Pipeline exposing
       (decode, required, resolve)
 
 
@@ -254,7 +254,7 @@ to perform some custom processing just before completing the decoding operation.
 
     result : Result String User
     result =
-      Decode.decodeString
+      Json.Decode.decodeString
         userDecoder
         """
           {"id": 123, "email": "sam@example.com", "version": 1}
