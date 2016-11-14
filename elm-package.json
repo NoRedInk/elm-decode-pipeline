@@ -1,5 +1,5 @@
 {
-    "version": "2.0.0",
+    "version": "3.0.0",
     "summary": "A pipeline-friendly library for building JSON decoders.",
     "repository": "https://github.com/NoRedInk/elm-decode-pipeline.git",
     "license": "BSD-3-Clause",
@@ -10,7 +10,7 @@
         "Json.Decode.Pipeline"
     ],
     "dependencies": {
-        "elm-lang/core": "4.0.0 <= v < 5.0.0"
+        "elm-lang/core": "5.0.0 <= v < 6.0.0"
     },
-    "elm-version": "0.17.0 <= v < 0.18.0"
+    "elm-version": "0.18.0 <= v < 0.19.0"
 }
