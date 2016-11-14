@@ -6,7 +6,7 @@ operator and plain function calls.
 ## Motivation
 
 It's common to decode into a record that has a `type alias`. Here's an example
-of this from the [`object3`](http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Json-Decode#object3)
+of this from the [`map3`](http://package.elm-lang.org/packages/elm-lang/core/5.0.0/Json-Decode#map3)
 docs:
 
 ```elm
@@ -14,10 +14,10 @@ type alias Job = { name : String, id : Int, completed : Bool }
 
 point : Decoder Job
 point =
-  object3 Job
-    ("name" := string)
-    ("id" := int)
-    ("completed" := bool)
+  map3 Job
+    (field "name" string)
+    (field "id" int)
+    (field "completed" bool)
 ```
 
 This works because a record type alias can be called as a normal function. In
@@ -25,7 +25,7 @@ that case it accepts one argument for each field (in whatever order the fields
 are declared in the type alias) and then returns an appropriate record built
 with those arguments.
 
-The `objectN` decoders are straightforward, but require manually changing N
+The `mapN` decoders are straightforward, but require manually changing N
 whenever the field count changes. This library provides functions designed to
 be used with the `|>` operator, with the goal of having decoders that are both
 easy to read and easy to modify.
