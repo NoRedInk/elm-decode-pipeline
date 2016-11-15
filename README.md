@@ -59,7 +59,7 @@ userDecoder =
 In this example:
 
 * `decode` is a synonym for [`succeed`](http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Json-Decode#succeed) (it just reads better here)
-* `required "id" int` is similar to `("id" := int)`
+* `required "id" int` is similar to `(field "id" int)`
 * `optional` is like `required`, but if the field is either `null` or not present, decoding does not fail; instead it succeeds with the provided fallback value.
 * `hardcoded` does not look at the provided JSON, and instead always decodes to the same value.
 
