@@ -98,7 +98,7 @@ In this case, the result would be:
 ```elm
 { id = 123
 , email = "sam@example.com"
-, name = "(fallback if name not present)"
+, name = "(fallback if name is `null` or not present)"
 , percentExcited = 1.0
 }
 ```
