@@ -35,8 +35,8 @@ easy to read and easy to modify.
 Here is a decoder built with this library.
 
 ```elm
-import Json.Decode exposing (int, string, float, Decoder)
-import Json.Decode.Pipeline exposing (decode, required, optional, nullable, hardcoded)
+import Json.Decode exposing (int, string, float, nullable, Decoder)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
 type alias User =
