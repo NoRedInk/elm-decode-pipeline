@@ -219,7 +219,7 @@ custom =
     Decode.map2 (|>)
 
 
-{-| Convert a `Decoder (Result x a)` into a `Decoder a`. Useful when you want
+{-| Convert a `Decoder (Decoder a)` into a `Decoder a`. Useful when you want
 to perform some custom processing just before completing the decoding operation.
 
     import Json.Decode exposing (int, string, float, Decoder)
