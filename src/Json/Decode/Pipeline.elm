@@ -143,7 +143,7 @@ optionalDecoder pathDecoder valDecoder fallback =
 
 
 {-| Rather than decoding anything, use a fixed value for the next step in the
-pipeline. `harcoded` does not look at the JSON at all.
+pipeline. `hardcoded` does not look at the JSON at all.
 
     import Json.Decode exposing (int, string, Decoder)
     import Json.Decode.Pipeline exposing (decode, required)
