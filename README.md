@@ -103,5 +103,13 @@ In this case, the result would be:
 }
 ```
 
+## Known Issues
+
+- (Version 3.0.0) The `Json.Decode.Pipeline` lib exposes a function named `required` which is also exposed by the Elm `Html` library. To avoid compilation errors, consider aliasing the library import as follows:
+
+```elm
+import Json.Decode.Pipeline as JsonDecodePipeline exposing (decode, required, optional, hardcoded)
+``
+
 ---
 [![NoRedInk](https://cloud.githubusercontent.com/assets/1094080/9069346/99522418-3a9d-11e5-8175-1c2bfd7a2ffe.png)](http://noredink.com/about/team)
