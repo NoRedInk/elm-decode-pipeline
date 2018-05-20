@@ -1,17 +1,17 @@
 module Tests exposing (..)
 
-import Test exposing (..)
 import Expect exposing (Expectation)
+import Json.Decode exposing (Decoder, null, string)
 import Json.Decode.Pipeline
     exposing
         ( decode
-        , required
-        , requiredAt
         , optional
         , optionalAt
-        , resolveResult
+        , required
+        , requiredAt
+        , resolve
         )
-import Json.Decode exposing (Decoder, string, null)
+import Test exposing (..)
 
 
 {-| Run some JSON through a Decoder and return the result.
@@ -97,18 +97,18 @@ all =
                     |> optionalAt [ "x", "y" ] string "--"
                     |> runWith """{"a":{},"x":{"y":5}}"""
                     |> expectErr
-        , test "resolveResult bubbles up decoded Err results" <|
+        , test "resolve bubbles up decoded Err results" <|
             \() ->
-                decode Err
+                decode Json.Decode.fail
                     |> required "error" string
-                    |> resolveResult
+                    |> resolve
                     |> runWith """{"error":"invalid"}"""
                     |> expectErr
-        , test "resolveResult bubbles up decoded Ok results" <|
+        , test "resolve bubbles up decoded Ok results" <|
             \() ->
-                decode Ok
+                decode Json.Decode.succeed
                     |> required "ok" string
-                    |> resolveResult
+                    |> resolve
                     |> runWith """{"ok":"valid"}"""
                     |> Expect.equal (Ok "valid")
         ]
