@@ -1,7 +1,7 @@
 module Example exposing (..)
 
-import Json.Decode exposing (int, string, float, Decoder)
-import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
+import Json.Decode exposing (Decoder, float, int, string)
+import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
 
 
 type alias User =
