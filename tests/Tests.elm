@@ -83,6 +83,13 @@ all =
                     |> optional "x" string "--"
                     |> runWith """{"a":null,"x":"five"}"""
                     |> Expect.equal (Ok ( "null", "five" ))
+        , test "optional fails if it's not decoding an object" <|
+            \() ->
+                decode (,)
+                    |> optional "a" string "--"
+                    |> optional "x" string "--"
+                    |> runWith """[]"""
+                    |> expectErr
         , test "optional fails if the field is present but doesn't decode" <|
             \() ->
                 decode (,)

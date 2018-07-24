@@ -139,8 +139,23 @@ optionalDecoder pathDecoder valDecoder fallback =
                             Decode.fail finalErr
 
                 Err _ ->
-                    -- The field was not present, so use the fallback.
-                    Decode.succeed fallback
+                    -- Decoding failed. This could be for one of two reasons.
+                    -- Either the field was not present, in which case we should
+                    -- use the fallback, or we're not working on an object, in
+                    -- which case we should fail.
+                    --
+                    -- https://github.com/NoRedInk/elm-decode-pipeline/issues/40
+
+                    case Decode.decodeValue (Decode.keyValuePairs Decode.value) input of
+                        Ok _ ->
+                            -- It's an object, but the field was not present,
+                            -- so use the fallback.
+                            Decode.succeed fallback
+
+                        Err finalErr ->
+                            -- It wasn't an object, so fail!
+                            Decode.fail finalErr
+
     in
     Decode.value
         |> Decode.andThen handleResult
