@@ -1,5 +1,5 @@
 {
-    "version": "3.0.0",
+    "version": "3.0.1",
     "summary": "A pipeline-friendly library for building JSON decoders.",
     "repository": "https://github.com/NoRedInk/elm-decode-pipeline.git",
     "license": "BSD-3-Clause",
