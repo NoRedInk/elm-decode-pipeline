@@ -219,8 +219,8 @@ Consider this example.
 
 -}
 custom : Decoder a -> Decoder (a -> b) -> Decoder b
-custom =
-    Decode.map2 (|>)
+custom decoder wrapped =
+    Decode.map2 (<|) wrapped decoder
 
 
 {-| Convert a `Decoder (Decoder a)` into a `Decoder a`. Useful when you want
